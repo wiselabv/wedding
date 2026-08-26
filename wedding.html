@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>给哥哥嫂嫂的新婚礼物</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+  }
+
+  body {
+    background: #1a0a1e;
+    overflow: hidden;
+    font-family: "STKaiti", "KaiTi", "楷体", serif;
+    touch-action: manipulation;
+  }
+
+  #canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    display: block;
+  }
+
+  /* ---------- 页面容器 ---------- */
+  .page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s ease;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .page-1 { transform: translateY(0); }
+  .page-2 {
+    transform: translateY(100%);
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  body.show-page2 .page-1 { transform: translateY(-100%); }
+  body.show-page2 .page-2 { transform: translateY(0); }
+
+  .card, .hint, .blessing-container, .click-hint, .top-hint {
+    pointer-events: auto;
+  }
+
+  /* ---------- 第一页卡片 ---------- */
+  .card {
+    position: absolute;
+    top: 52%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(255, 105, 180, 0.85);
+    animation: fadeIn 3s ease-in-out;
+  }
+
+  .title {
+    font-size: 1.6rem;
+    letter-spacing: 8px;
+    opacity: 0.9;
+    margin-bottom: 12px;
+    color: #ffe4ec;
+  }
+
+  .names {
+    font-size: 2.8rem;
+    letter-spacing: 6px;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+
+  .heart {
+    font-size: 3rem;
+    animation: heartbeat 1.2s infinite;
+  }
+
+  .date {
+    font-size: 1.2rem;
+    letter-spacing: 4px;
+    opacity: 0.9;
+    margin-top: 10px;
+  }
+
+  .hint {
+    position: absolute;
+    bottom: 28px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.65);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .soft-text {
+    font-size: 0.85rem;
+    letter-spacing: 6px;
+    opacity: 0.55;
+    line-height: 1.8;
+  }
+
+  /* 点击提示：外圈粉色，内实心粉点 */
+  .click-hint {
+    position: fixed;
+    width: 48px;
+    height: 48px;
+    border: 3px solid rgba(255, 105, 180, 0.85); /* 粉色外圈 */
+    border-radius: 50%;
+    pointer-events: none;
+    animation: pulse 2s infinite;
+    display: none;
+    z-index: 20;
+  }
+
+  .click-hint-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px;
+    height: 14px;
+    background: #ff85c2; /* 亮粉色 */
+    border-radius: 50%;
+    box-shadow: 0 0 10px #ff85c2, 0 0 20px rgba(255, 105, 180, 0.8);
+    animation: dotBlink 1.2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(0.9); opacity: 0.9; }
+    50% { transform: scale(1.1); opacity: 0.7; }
+    100% { transform: scale(0.9); opacity: 0.9; }
+  }
+
+  @keyframes dotBlink {
+    0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.3); }
+  }
+
+  /* 上滑箭头 */
+  .arrow-up {
+    width: 22px;
+    height: 22px;
+    border-left: 3px solid rgba(255, 255, 255, 0.75);
+    border-bottom: 3px solid rgba(255, 255, 255, 0.75);
+    transform: rotate(135deg);
+    margin: 8px auto;
+    animation: bounceUp 1.8s infinite;
+  }
+
+  @keyframes bounceUp {
+    0%, 100% { transform: translateY(0) rotate(135deg); opacity: 0.45; }
+    50% { transform: translateY(-8px) rotate(135deg); opacity: 0.9; }
+  }
+
+  /* 向下箭头 */
+  .arrow-down {
+    width: 22px;
+    height: 22px;
+    border-left: 3px solid rgba(255, 255, 255, 0.75);
+    border-bottom: 3px solid rgba(255, 255, 255, 0.75);
+    transform: rotate(-45deg);
+    margin: 6px auto;
+    animation: bounceDown 1.8s infinite;
+  }
+
+  @keyframes bounceDown {
+    0%, 100% { transform: translateY(0) rotate(-45deg); opacity: 0.45; }
+    50% { transform: translateY(8px) rotate(-45deg); opacity: 0.9; }
+  }
+
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.2); }
+    40% { transform: scale(1); }
+    60% { transform: scale(1.15); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, -40%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+  }
+
+  /* ---------- 第二页：祝福 ---------- */
+  .blessing-container {
+    text-align: center;
+    color: #fff;
+    text-shadow: 0 0 15px rgba(255, 105, 180, 0.8);
+    max-width: 80%;
+    animation: fadeInUp 1s ease;
+  }
+
+  .blessing-container h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    letter-spacing: 4px;
+  }
+
+  .blessing-list {
+    list-style: none;
+    padding: 0;
+    font-size: 1.4rem;
+    line-height: 2.4;
+  }
+
+  .blessing-list li {
+    opacity: 0;
+    animation: fadeInItem 0.8s forwards;
+  }
+  .blessing-list li:nth-child(1) { animation-delay: 0.2s; }
+  .blessing-list li:nth-child(2) { animation-delay: 0.4s; }
+  .blessing-list li:nth-child(3) { animation-delay: 0.6s; }
+  .blessing-list li:nth-child(4) { animation-delay: 0.8s; }
+  .blessing-list li:nth-child(5) { animation-delay: 1.0s; }
+
+  /* 第二页顶部向下箭头提示 */
+  .top-hint {
+    position: absolute;
+    top: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    color: rgba(255, 255, 255, 0.65);
+    z-index: 11;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInItem {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<audio id="bgMusic" loop preload="auto" src="music.mp3"></audio>
+<canvas id="canvas"></canvas>
+
+<!-- 第一页 -->
+<div class="page page-1" id="page1">
+  <div class="card">
+    <div class="title">百年好合</div>
+    <div class="names" id="names">哥哥 ❤ 嫂嫂</div>
+    <div class="heart">💖</div>
+    <div class="date" id="date">2026.08.26</div>
+  </div>
+
+  <div class="click-hint" id="clickHint">
+    <div class="click-hint-dot"></div>
+  </div>
+
+  <div class="hint">
+    <span class="soft-text">指尖生花</span>
+    <div class="arrow-up"></div>
+    <span class="soft-text">岁岁常相见</span>
+  </div>
+</div>
+
+<!-- 第二页 -->
+<div class="page page-2" id="page2">
+  <div class="top-hint">
+    <div class="arrow-down"></div>
+    <span class="soft-text">慢慢回来</span>
+  </div>
+
+  <div class="blessing-container">
+    <h2>💌 给哥哥嫂嫂的祝福</h2>
+    <ul class="blessing-list">
+      <li>愿你们琴瑟和鸣，岁月静好。</li>
+      <li>从青丝到白发，相守一生。</li>
+      <li>冷暖有相知，喜乐有分享。</li>
+      <li>往后余生，目光所至都是你们。</li>
+      <li>新婚快乐，永结同心！</li>
+	  <li style="margin-top: 20px;">
+		  祝哥哥嫂嫂新婚快乐，永远幸福！<br>
+		  <span style="display: block; text-align: right;">—— 苏雅拉</span>
+		</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+  // ========== 定制信息 ==========
+  const groom = "哥哥";
+  const bride = "嫂嫂";
+  const weddingDate = "2026.08.26";
+  document.getElementById('names').textContent = `${groom} ❤ ${bride}`;
+  document.getElementById('date').textContent = weddingDate;
+
+  // ---------- 音乐 ----------
+  const bgMusic = document.getElementById('bgMusic');
+  let musicStarted = false;
+  function playMusic() {
+    if (!musicStarted) {
+      bgMusic.play().then(() => { musicStarted = true; })
+        .catch(err => console.log('音乐播放被阻止:', err));
+    }
+  }
+
+  // ---------- Canvas ----------
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // ---------- 心形粒子 ----------
+  function heartPosition(t, scale = 1) {
+    const x = 16 * Math.pow(Math.sin(t), 3);
+    const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+    return { x: x * scale, y: -y * scale };
+  }
+  const heartParticles = [];
+  for (let i = 0; i < 240; i++) {
+    const t = Math.random() * Math.PI * 2;
+    const pos = heartPosition(t, 14);
+    heartParticles.push({
+      t,
+      baseX: pos.x,
+      baseY: pos.y,
+      x: 0, y: 0,
+      size: 2 + Math.random() * 3,
+      speed: 0.005 + Math.random() * 0.015,
+      color: `hsl(${330 + Math.random() * 30}, 100%, ${60 + Math.random() * 30}%)`,
+      offset: Math.random() * Math.PI * 2
+    });
+  }
+  function updateHeartParticles(time) {
+    const cx = W / 2, cy = H / 2 - 30;
+    heartParticles.forEach(p => {
+      p.t += p.speed;
+      const pos = heartPosition(p.t, 14);
+      const wobble = 1 + Math.sin(time * 0.001 + p.offset) * 0.05;
+      p.x = cx + pos.x * wobble;
+      p.y = cy + pos.y * wobble;
+    });
+  }
+  function drawHeartParticles() {
+    heartParticles.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 8;
+      ctx.fill();
+    });
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+  }
+
+  // ---------- 烟花粒子 ----------
+  class FireworkParticle {
+    constructor(x, y, color) {
+      this.x = x; this.y = y;
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 3 + 1.5;
+      this.vx = Math.cos(angle) * speed;
+      this.vy = Math.sin(angle) * speed;
+      this.life = 1;
+      this.decay = 0.004 + Math.random() * 0.008;
+      this.color = color;
+      this.size = 2 + Math.random() * 3;
+    }
+    update() {
+      this.x += this.vx; this.y += this.vy;
+      this.vy += 0.05; this.vx *= 0.98; this.vy *= 0.98;
+      this.life -= this.decay;
+    }
+    draw() {
+      const radius = this.size * this.life;
+      if (radius <= 0) return;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.globalAlpha = this.life;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  let fireworks = [];
+
+  function createFirework(x, y) {
+    if (fireworks.length > 600) fireworks.splice(0, fireworks.length - 400);
+    const colors = ['#ff6b6b','#ffa07a','#ffd700','#ff69b4','#ff1493','#ffb6c1','#fff0f5','#ff9ff3','#feca57','#7bed9f'];
+    const type = Math.floor(Math.random() * 5); // 0:圆形 1:心形 2:双环 3:螺旋 4:放射线
+
+    if (type === 0) {
+      // 普通圆形爆炸
+      const count = 100;
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count;
+        const speed = Math.random() * 4 + 2;
+        const p = new FireworkParticle(x, y, colors[Math.floor(Math.random() * colors.length)]);
+        p.vx = Math.cos(angle) * speed;
+        p.vy = Math.sin(angle) * speed;
+        fireworks.push(p);
+      }
+    } else if (type === 1) {
+      // 心形爆炸
+      const count = 80;
+      for (let i = 0; i < count; i++) {
+        const t = (Math.PI * 2 * i) / count;
+        const hx = 16 * Math.pow(Math.sin(t), 3);
+        const hy = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+        const scale = 3.5;
+        const p = new FireworkParticle(x, y, '#ff4d6d');
+        p.vx = hx * scale * 0.1;
+        p.vy = -hy * scale * 0.1;
+        fireworks.push(p);
+      }
+    } else if (type === 2) {
+      // 双环爆炸
+      const count1 = 60;
+      for (let i = 0; i < count1; i++) {
+        const angle = (Math.PI * 2 * i) / count1;
+        const speed = 3.5;
+        const p = new FireworkParticle(x, y, colors[Math.floor(Math.random() * colors.length)]);
+        p.vx = Math.cos(angle) * speed;
+        p.vy = Math.sin(angle) * speed;
+        fireworks.push(p);
+      }
+      const count2 = 40;
+      for (let i = 0; i < count2; i++) {
+        const angle = (Math.PI * 2 * i) / count2 + 0.3;
+        const speed = 6;
+        const p = new FireworkParticle(x, y, '#ffffff');
+        p.vx = Math.cos(angle) * speed;
+        p.vy = Math.sin(angle) * speed;
+        fireworks.push(p);
+      }
+    } else if (type === 3) {
+      // 螺旋爆炸：粒子沿螺旋线分布
+      const count = 70;
+      for (let i = 0; i < count; i++) {
+        const t = (Math.PI * 2 * i) / count;
+        const angle = t * 3; // 多圈螺旋
+        const speed = 2 + (i / count) * 4; // 速度逐渐增加
+        const p = new FireworkParticle(x, y, colors[Math.floor(Math.random() * colors.length)]);
+        p.vx = Math.cos(angle) * speed;
+        p.vy = Math.sin(angle) * speed;
+        fireworks.push(p);
+      }
+    } else if (type === 4) {
+      // 放射线爆炸：速度极快，粒子尺寸小但生命较长，形成光芒
+      const count = 50;
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 7 + Math.random() * 5;
+        const p = new FireworkParticle(x, y, '#ffffff');
+        p.vx = Math.cos(angle) * speed;
+        p.vy = Math.sin(angle) * speed;
+        p.size = 1.5; // 更小
+        p.decay = 0.002; // 衰减更慢
+        fireworks.push(p);
+      }
+    }
+
+    // 额外小粒子
+    for (let i = 0; i < 20; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 2 + 1;
+      const p = new FireworkParticle(x, y, '#fff');
+      p.vx = Math.cos(angle) * speed;
+      p.vy = Math.sin(angle) * speed;
+      p.size = 1.5;
+      fireworks.push(p);
+    }
+  }
+
+  // ---------- 点击提示圆圈：随机移动 ----------
+  const clickHint = document.getElementById('clickHint');
+  let clickHintInterval;
+
+  function randomizeClickHint() {
+    if (clickHint.style.display === 'none') return;
+    const margin = 50;
+    const x = margin + Math.random() * (W - margin * 2);
+    const y = margin + Math.random() * (H * 0.5);
+    clickHint.style.left = x + 'px';
+    clickHint.style.top = y + 'px';
+    clickHint.style.display = 'block';
+  }
+
+  function startClickHintRandomMove() {
+    randomizeClickHint();
+    clickHintInterval = setInterval(randomizeClickHint, 3000);
+  }
+
+  function hideClickHint() {
+    clickHint.style.display = 'none';
+    clearInterval(clickHintInterval);
+  }
+
+  startClickHintRandomMove();
+
+  // ---------- 交互 ----------
+  function handleInteraction(clientX, clientY) {
+    playMusic();
+    createFirework(clientX, clientY);
+    hideClickHint();
+  }
+
+  document.addEventListener('click', (e) => {
+    handleInteraction(e.clientX, e.clientY);
+  });
+
+  document.addEventListener('touchstart', (e) => {
+    const touch = e.touches[0];
+    handleInteraction(touch.clientX, touch.clientY);
+  }, { passive: true });
+
+  // 自动随机烟花
+  setInterval(() => {
+    if (currentPage === 1) {
+      createFirework(Math.random() * W, Math.random() * H * 0.6);
+    }
+  }, 3500);
+
+  // ---------- 页面切换 ----------
+  const body = document.body;
+  let currentPage = 1;
+
+  function goToPage(page) {
+    if (page === currentPage) return;
+    if (page === 2) {
+      body.classList.add('show-page2');
+      currentPage = 2;
+    } else {
+      body.classList.remove('show-page2');
+      currentPage = 1;
+    }
+  }
+
+  window.addEventListener('wheel', (e) => {
+    if (e.deltaY > 0 && currentPage === 1) goToPage(2);
+    else if (e.deltaY < 0 && currentPage === 2) goToPage(1);
+  }, { passive: true });
+
+  let touchStartY = 0;
+  window.addEventListener('touchstart', (e) => {
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  window.addEventListener('touchmove', (e) => {
+    const touchY = e.touches[0].clientY;
+    const deltaY = touchStartY - touchY;
+    if (deltaY > 50 && currentPage === 1) goToPage(2);
+    else if (deltaY < -50 && currentPage === 2) goToPage(1);
+  }, { passive: true });
+
+  // 箭头点击切换
+  document.querySelector('.arrow-up').addEventListener('click', () => goToPage(2));
+  document.querySelector('.arrow-down').addEventListener('click', () => goToPage(1));
+
+  // ---------- 动画循环 ----------
+  function animate(time) {
+    requestAnimationFrame(animate);
+    const gradient = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.7);
+    gradient.addColorStop(0, '#2a0a2e');
+    gradient.addColorStop(0.5, '#1a0a1e');
+    gradient.addColorStop(1, '#0a0510');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, W, H);
+
+    updateHeartParticles(time);
+    drawHeartParticles();
+
+    fireworks = fireworks.filter(f => {
+      f.update();
+      f.draw();
+      return f.life > 0;
+    });
+
+    ctx.font = "16px KaiTi, STKaiti, serif";
+    ctx.fillStyle = "rgba(255,255,255,0.35)";
+    ctx.textAlign = "center";
+    ctx.fillText("愿你们往后余生，冷暖有相知，喜乐有分享", W / 2, H - 60);
+  }
+
+  animate(0);
+</script>
+</body>
+</html>
